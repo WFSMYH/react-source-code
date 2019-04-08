@@ -25,6 +25,7 @@ let specialPropKeyWarningShown, specialPropRefWarningShown;
 function hasValidRef(config) {
   if (__DEV__) {
     if (hasOwnProperty.call(config, 'ref')) {
+      debugger;
       const getter = Object.getOwnPropertyDescriptor(config, 'ref').get;
       if (getter && getter.isReactWarning) {
         return false;
@@ -111,6 +112,7 @@ function defineRefPropWarningGetter(props, displayName) {
 const ReactElement = function(type, key, ref, self, source, owner, props) {
   const element = {
     // This tag allows us to uniquely identify this as a React Element
+    // 标识element的类型
     $$typeof: REACT_ELEMENT_TYPE,
 
     // Built-in properties that belong on the element
@@ -168,10 +170,17 @@ const ReactElement = function(type, key, ref, self, source, owner, props) {
  * Create and return a new ReactElement of the given type.
  * See https://reactjs.org/docs/react-api.html#createelement
  */
+// babel会将普通的jsx转化为如下的createelement方法
+/**
+ * @param {object or string} type 节点类型
+ * @param {object} config  组件的属性
+ * @param {string or elment} children 组件的内容
+ */
 export function createElement(type, config, children) {
   let propName;
 
   // Reserved names are extracted
+  // 待处理的组件props属性
   const props = {};
 
   let key = null;
@@ -180,9 +189,11 @@ export function createElement(type, config, children) {
   let source = null;
 
   if (config != null) {
+    // 如果存在ref则对ref进行赋值
     if (hasValidRef(config)) {
       ref = config.ref;
     }
+    // 如果有key则对key赋值
     if (hasValidKey(config)) {
       key = '' + config.key;
     }
@@ -190,10 +201,11 @@ export function createElement(type, config, children) {
     self = config.__self === undefined ? null : config.__self;
     source = config.__source === undefined ? null : config.__source;
     // Remaining properties are added to a new props object
+    // 处理props-{除了key和ref}
     for (propName in config) {
       if (
-        hasOwnProperty.call(config, propName) &&
-        !RESERVED_PROPS.hasOwnProperty(propName)
+        hasOwnProperty.call(config, propName) && // config中有值
+        !RESERVED_PROPS.hasOwnProperty(propName) // 过滤掉key和ref 因为之前已经处理过以上属性
       ) {
         props[propName] = config[propName];
       }
@@ -202,7 +214,8 @@ export function createElement(type, config, children) {
 
   // Children can be more than one argument, and those are transferred onto
   // the newly allocated props object.
-  const childrenLength = arguments.length - 2;
+  // 处理children
+  const childrenLength = arguments.length - 2; // children可以传入多个-兄弟参数// 参数值-2就是除了type和config之外的所有children
   if (childrenLength === 1) {
     props.children = children;
   } else if (childrenLength > 1) {

@@ -18,7 +18,6 @@ function requestData() {
 
 function SuspenseComp() {
   const data = requestData()
-
   return <p>{data}</p>
 }
 

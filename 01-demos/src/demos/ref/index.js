@@ -21,11 +21,11 @@ export default class RefDemo extends React.Component {
 
   render() {
     return (
-      <>
+      <div>
         <p ref="stringRef">span1</p>
         <p ref={ele => (this.methodRef = ele)}>span3</p>
         <p ref={this.objRef}>span3</p>
-      </>
+      </div>
     )
   }
 }

@@ -19,15 +19,18 @@ if (__DEV__) {
  * Base class helpers for the updating state of a component.
  */
 function Component(props, context, updater) {
+  debugger;
   this.props = props;
   this.context = context;
   // If a component has string refs, we will assign a different object later.
   this.refs = emptyObject;
   // We initialize the default updater but the real one gets injected by the
   // renderer.
+  // updater
   this.updater = updater || ReactNoopUpdateQueue;
 }
 
+// 声明prototype
 Component.prototype.isReactComponent = {};
 
 /**
@@ -55,6 +58,7 @@ Component.prototype.isReactComponent = {};
  * @final
  * @protected
  */
+// 原型上声明setState方法
 Component.prototype.setState = function(partialState, callback) {
   invariant(
     typeof partialState === 'object' ||
@@ -63,6 +67,9 @@ Component.prototype.setState = function(partialState, callback) {
     'setState(...): takes an object of state variables to update or a ' +
       'function which returns an object of state variables.',
   );
+  // setStated的时候在component
+  // 里面没有任何操作只是调用了this.updater里面的enqueueSetState方法
+  // ？在react-dom中实现的方法后续
   this.updater.enqueueSetState(this, partialState, callback, 'setState');
 };
 
@@ -80,6 +87,7 @@ Component.prototype.setState = function(partialState, callback) {
  * @final
  * @protected
  */
+// forceUpdate-强制更新组件
 Component.prototype.forceUpdate = function(callback) {
   this.updater.enqueueForceUpdate(this, callback, 'forceUpdate');
 };
@@ -121,7 +129,7 @@ if (__DEV__) {
     }
   }
 }
-
+// 继承component的prototype原型
 function ComponentDummy() {}
 ComponentDummy.prototype = Component.prototype;
 
@@ -140,6 +148,7 @@ const pureComponentPrototype = (PureComponent.prototype = new ComponentDummy());
 pureComponentPrototype.constructor = PureComponent;
 // Avoid an extra prototype jump for these methods.
 Object.assign(pureComponentPrototype, Component.prototype);
+// 标识是一个pureComponent
 pureComponentPrototype.isPureReactComponent = true;
 
 export {Component, PureComponent};
