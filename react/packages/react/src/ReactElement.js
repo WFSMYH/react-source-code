@@ -25,7 +25,6 @@ let specialPropKeyWarningShown, specialPropRefWarningShown;
 function hasValidRef(config) {
   if (__DEV__) {
     if (hasOwnProperty.call(config, 'ref')) {
-      debugger;
       const getter = Object.getOwnPropertyDescriptor(config, 'ref').get;
       if (getter && getter.isReactWarning) {
         return false;
@@ -109,6 +108,7 @@ function defineRefPropWarningGetter(props, displayName) {
  * @param {*} props
  * @internal
  */
+// 接受createElement方法处理好的参数，单纯返回一个element对象
 const ReactElement = function(type, key, ref, self, source, owner, props) {
   const element = {
     // This tag allows us to uniquely identify this as a React Element
@@ -170,16 +170,16 @@ const ReactElement = function(type, key, ref, self, source, owner, props) {
  * Create and return a new ReactElement of the given type.
  * See https://reactjs.org/docs/react-api.html#createelement
  */
+// wfs源码阅读注释
 // babel会将普通的jsx转化为如下的createelement方法
 /**
- * @param {object or string} type 节点类型
- * @param {object} config  组件的属性
- * @param {string or elment} children 组件的内容
+ * @param {object or string} type 传入的节点类型，如果是Dom则为一个字符串，但是如果为classComponent或者functionComponent则为一个变量
+ * @param {object} config  传入组件的属性包括id，class， ref，key等等....
+ * @param {string or elment} children 组件的内容为一个字符串或者一个element元素
  */
 export function createElement(type, config, children) {
   let propName;
 
-  // Reserved names are extracted
   // 待处理的组件props属性
   const props = {};
 
@@ -221,7 +221,7 @@ export function createElement(type, config, children) {
   } else if (childrenLength > 1) {
     const childArray = Array(childrenLength);
     for (let i = 0; i < childrenLength; i++) {
-      childArray[i] = arguments[i + 2];
+      childArray[i] = arguments[i + 2]; // 如果children个数大于2声明children数组添加传入参数
     }
     if (__DEV__) {
       if (Object.freeze) {
@@ -232,11 +232,11 @@ export function createElement(type, config, children) {
   }
 
   // Resolve default props
-  if (type && type.defaultProps) {
+  if (type && type.defaultProps) { // classComponent 可以声明defaultProps当转入的props是undefined的时候需要使用默认props
     const defaultProps = type.defaultProps;
     for (propName in defaultProps) {
       if (props[propName] === undefined) {
-        props[propName] = defaultProps[propName];
+        props[propName] = defaultProps[propName]; // 使用默认props
       }
     }
   }
@@ -254,6 +254,7 @@ export function createElement(type, config, children) {
       }
     }
   }
+  // 将处理好的值传入ReactElement方法
   return ReactElement(
     type,
     key,

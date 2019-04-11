@@ -307,8 +307,9 @@ function mapSingleChildIntoContext(bookKeeping, child, childKey) {
     result.push(mappedChild);
   }
 }
-
+// mapIntoWithKeyPrefixInternal(children, result, null, func, context);
 function mapIntoWithKeyPrefixInternal(children, array, prefix, func, context) {
+  // 处理key
   let escapedPrefix = '';
   if (prefix != null) {
     escapedPrefix = escapeUserProvidedKey(prefix) + '/';
@@ -336,6 +337,7 @@ function mapIntoWithKeyPrefixInternal(children, array, prefix, func, context) {
  * @param {*} context Context for mapFunction.
  * @return {object} Object containing the ordered map of results.
  */
+// children和一个回调函数
 function mapChildren(children, func, context) {
   if (children == null) {
     return children;

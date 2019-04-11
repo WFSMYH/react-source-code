@@ -36,7 +36,7 @@ import ReactSharedInternals from './ReactSharedInternals';
 import {enableStableConcurrentModeAPIs} from 'shared/ReactFeatureFlags';
 
 const React = {
-  Children: {
+  Children: { // 该对象有五个属性
     map,
     forEach,
     count,
