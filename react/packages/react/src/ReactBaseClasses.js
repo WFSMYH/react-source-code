@@ -18,18 +18,21 @@ if (__DEV__) {
 /**
  * Base class helpers for the updating state of a component.
  */
+// 使用function声明了一个类，然后在原型上做了方法的扩展
 function Component(props, context, updater) {
+  // 对props和context进行赋值操作
   this.props = props;
   this.context = context;
   // If a component has string refs, we will assign a different object later.
-  this.refs = emptyObject;
+  // 赋值this.refs为一个冻结的object--todo？why
+  this.refs = emptyObject; // 如果是一个string类型的ref后面会创建出一个不同的object对象
   // We initialize the default updater but the real one gets injected by the
   // renderer.
   // updater
   this.updater = updater || ReactNoopUpdateQueue;
 }
 
-// 声明prototype
+// 声明prototype为isReactComponent
 Component.prototype.isReactComponent = {};
 
 /**
@@ -57,9 +60,9 @@ Component.prototype.isReactComponent = {};
  * @final
  * @protected
  */
-// 原型上声明setState方法
+// 原型上声明setState方法==接受两个参数partialState待更新的state，callback回调函数
 Component.prototype.setState = function(partialState, callback) {
-  invariant(
+  invariant(// 判断传入参数是否合法--包括state和callBack
     typeof partialState === 'object' ||
       typeof partialState === 'function' ||
       partialState == null,
@@ -67,8 +70,9 @@ Component.prototype.setState = function(partialState, callback) {
       'function which returns an object of state variables.',
   );
   // setStated的时候在component
-  // 里面没有任何操作只是调用了this.updater里面的enqueueSetState方法
-  // ？在react-dom中实现的方法后续
+  // 里面没有任何操作只是调用了初始化传入的this.updater里面的enqueueSetState方法
+  // 将this，state，callBack，和一个字符串‘setState’传入==个人认为这个setState为一个type
+  // enqueueSetState todo? 此方法在react-dom中实现=后续
   this.updater.enqueueSetState(this, partialState, callback, 'setState');
 };
 
@@ -86,7 +90,7 @@ Component.prototype.setState = function(partialState, callback) {
  * @final
  * @protected
  */
-// forceUpdate-强制更新组件
+// forceUpdate-强制更新组件State方法
 Component.prototype.forceUpdate = function(callback) {
   this.updater.enqueueForceUpdate(this, callback, 'forceUpdate');
 };
@@ -144,10 +148,11 @@ function PureComponent(props, context, updater) {
 }
 
 const pureComponentPrototype = (PureComponent.prototype = new ComponentDummy());
+// 将构造函数指向pureComponent--现实继承
 pureComponentPrototype.constructor = PureComponent;
 // Avoid an extra prototype jump for these methods.
+// 在原型上添加一个额外的isPureReactComponent属性/，标识是一个pureComponent
 Object.assign(pureComponentPrototype, Component.prototype);
-// 标识是一个pureComponent
 pureComponentPrototype.isPureReactComponent = true;
 
 export {Component, PureComponent};

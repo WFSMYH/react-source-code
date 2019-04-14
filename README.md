@@ -6,9 +6,7 @@ version: 1.0.0
 ---
 # react-source-code
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;断断续续算起来也看了将近一个月的,我们开门见山的说，以下我在阅读源码的时候遇到的一些问题，  
-
-和一些对源码的理解。至于有解释得不对的地方，或者大家不能理解的一些内容，欢迎大家指正和探讨。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;断断续续算起来也看了将近一个月的,我们开门见山的说，以下我在阅读源码的时候遇到的一些问题,和一些对源码的理解。至于有解释得不对的地方，或者大家不能理解的一些内容，欢迎大家指正和探讨。
 
 <!-- TOC -->
 
@@ -17,6 +15,7 @@ version: 1.0.0
   - [从jsx到JavaScript的转换](#从jsx到javascript的转换)
   - [常用API简介](#常用api简介)
     - [(1)react-element](#1react-element)
+    - [Component&PureComponent](#componentpurecomponent)
 
 <!-- /TOC -->
 ***
@@ -113,3 +112,66 @@ const _Ele = React.CreateElement('div', {id: 'id1', key: 'key1', ref: (refs)=>{t
 到这一步，我们只是做了从jsx语法到ReactElement的转换，后面我们会挑重点介绍几个常用的api，其实react库实际只提供了不多的几  
 
 个api剩下的内容都抽象到React-dom，shared，scheduler等库中去实现。
+
+### Component&PureComponent
+
+看到这个api想必大家再熟悉不过了，平常我们在react开发过程中写的组件都是继承自这个Component组件，比如我们在声明
+
+ClassComponent的时候extends的就是React.Component,在看源码只是我个人觉得写个class应该实现了很多复杂的功能  
+
+比如说setState和render方法等，但是看了源码之后颠覆了我之前的认知[Component](./react/packages/react/src/ReactBaseClasses.js)： 
+```shell
+Component(props, context, updater)
+```
+在源码中Component方法只是简单的对props和context进行了赋值操作，这两个传入的参数我们都很熟悉，最后这个updater  
+
+参数我们我们接触到。通过源码我们看到在Component的原型上声明了setState方法：
+
+```shell
+// 原型上声明setState方法==接受两个参数partialState待更新的state，callback回调函数
+Component.prototype.setState = function(partialState, callback) {
+  invariant(// 判断传入参数是否合法--包括state和callBack
+    typeof partialState === 'object' ||
+      typeof partialState === 'function' ||
+      partialState == null,
+    'setState(...): takes an object of state variables to update or a ' +
+      'function which returns an object of state variables.',
+  );
+  // setStated的时候在component
+  // 里面没有任何操作只是调用了初始化传入的this.updater里面的enqueueSetState方法
+  // 将this，state，callBack，和一个字符串‘setState’传入==>个人认为这个setState为一个type
+  // enqueueSetState todo? 此方法在react-dom中实现=后续
+  this.updater.enqueueSetState(this, partialState, callback, 'setState');
+};
+```
+该函数内部只是判断了传入参数的合法性最后调用了Component中updater方法上的enqueueSetState。然后方法结束，  
+
+这里去查了一下资料，这个方法具体的实现是在react-dom中完成的。为什么要这样做呢，因为在react中只是简单的  
+
+提供了这个方法的入口，具体的调用需要看你在哪个平台下使用，比如在react-dom中和在react-native中的调用肯定是  
+
+不同的。在原型上也声明了
+```shell
+// forceUpdate-强制更新组件State方法
+Component.prototype.forceUpdate = function(callback) {
+  this.updater.enqueueForceUpdate(this, callback, 'forceUpdate');
+};
+```
+看到这里我们发现只是调用了updater 的enqueueForceUpdate方法，个人认为跟字面意思一样，对state的进行了强制  
+
+更新操作。PureComponent的用法我们不必再去赘述，该方法实际就是对Component方法进行了继承，但是多加了一个属性：
+```shell
+// 在原型上添加一个额外的isPureReactComponent属性/，标识是一个pureComponent
+Object.assign(pureComponentPrototype, Component.prototype);
+pureComponentPrototype.isPureReactComponent = true;
+```
+isPureReactComponent用来说明是一个PureComponent。最后将这两个方法导出，到这里我们有关Componet的源码已经  
+
+完结了，我们看到在react中其实没有太多复杂的操作，只是对传入参数的赋值，已经留下了一些函数入口。像更新渲染等  
+
+操作实际都放在了react-dom中去完成。
+
+
+
+
+
