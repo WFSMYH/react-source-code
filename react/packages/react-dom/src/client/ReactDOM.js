@@ -462,13 +462,13 @@ ReactGenericBatching.setBatchingImplementation(
 let warnedAboutHydrateAPI = false;
 
 function legacyCreateRootFromDOMContainer(
-  container: DOMContainer,
-  forceHydrate: boolean,
+  container: DOMContainer, // 容器
+  forceHydrate: boolean, // 首次=>false
 ): Root {
-  const shouldHydrate =
+  const shouldHydrate = // 有无服务端渲染==首次传入false进if
     forceHydrate || shouldHydrateDueToLegacyHeuristic(container);
   // First clear any existing content.
-  if (!shouldHydrate) {
+  if (!shouldHydrate) { // 无服务端渲染
     let warned = false;
     let rootSibling;
     while ((rootSibling = container.lastChild)) {
@@ -507,13 +507,14 @@ function legacyCreateRootFromDOMContainer(
 }
 
 function legacyRenderSubtreeIntoContainer(
-  parentComponent: ?React$Component<any, any>,
-  children: ReactNodeList,
-  container: DOMContainer,
-  forceHydrate: boolean,
-  callback: ?Function,
+  parentComponent: ?React$Component<any, any>, // 父级组件=>首次创建==传入null
+  children: ReactNodeList, //element-元素
+  container: DOMContainer, // container-容器
+  forceHydrate: boolean, // todo?首次传入false
+  callback: ?Function, // 回调函数
 ) {
   // TODO: Ensure all entry points contain this check
+  // 验证容器是否可用
   invariant(
     isValidContainer(container),
     'Target container is not a DOM element.',
@@ -525,12 +526,13 @@ function legacyRenderSubtreeIntoContainer(
 
   // TODO: Without `any` type, Flow says "Property cannot be accessed on any
   // member of intersection type." Whyyyyyy.
-  let root: Root = (container._reactRootContainer: any);
-  if (!root) {
+  let root: Root = (container._reactRootContainer: any); // 声明root变量==容器上面是否有container属性
+  if (!root) { // 首次创建没有rootContainer属性=进if
     // Initial mount
+    // 创建reactRoot
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
-      container,
-      forceHydrate,
+      container, // 容器
+      forceHydrate, // 布尔值
     );
     if (typeof callback === 'function') {
       const originalCallback = callback;
@@ -586,6 +588,7 @@ function createPortal(
   return ReactPortal.createPortal(children, container, null, key);
 }
 
+// 定义reactDom
 const ReactDOM: Object = {
   createPortal,
 
@@ -635,17 +638,18 @@ const ReactDOM: Object = {
     );
   },
 
+  // 接受传入的reactElement-通过createElement方法创建的
   render(
-    element: React$Element<any>,
-    container: DOMContainer,
-    callback: ?Function,
+    element: React$Element<any>, // reactElement
+    container: DOMContainer, // 渲染容器=>挂载的DOM节点
+    callback: ?Function, // 应用渲染结束后的回调
   ) {
-    return legacyRenderSubtreeIntoContainer(
+    return legacyRenderSubtreeIntoContainer( // 调用方法
       null,
-      element,
-      container,
+      element, // 元素
+      container, // 容器
       false,
-      callback,
+      callback, // 回调函数
     );
   },
 
