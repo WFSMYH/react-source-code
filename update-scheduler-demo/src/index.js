@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
-// import App from './App';
+import App from './App';
 
 // 批量更新的demo
 // import App from './demos/batchedUpdates'
@@ -10,7 +10,7 @@ import './index.css'
 // import App from './demos/IndeterminateComponent'
 
 // lazy demo
-import App from './demos/lazy'
+// import App from './demos/lazy'
 
 // error demo
 // import App from './demos/error'

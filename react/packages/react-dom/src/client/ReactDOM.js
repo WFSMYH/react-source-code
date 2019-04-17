@@ -330,13 +330,13 @@ ReactWork.prototype._onCommit = function(): void {
     callback();
   }
 };
-
+// 调用方法{ReactDom==6}
 function ReactRoot(
   container: Container,
   isConcurrent: boolean,
   hydrate: boolean,
 ) {
-  const root = DOMRenderer.createContainer(container, isConcurrent, hydrate);
+  const root = DOMRenderer.createContainer(container, isConcurrent, hydrate); // 赋值root
   this._internalRoot = root;
 }
 ReactRoot.prototype.render = function(
@@ -352,6 +352,7 @@ ReactRoot.prototype.render = function(
   if (callback !== null) {
     work.then(callback);
   }
+  // 调用DOMRenderer==>updateContainer
   DOMRenderer.updateContainer(children, root, null, work._onCommit);
   return work;
 };
@@ -431,25 +432,25 @@ function isValidContainer(node) {
         node.nodeValue === ' react-mount-point-unstable '))
   );
 }
-
+// 调用方法{ReactDom==5}
 function getReactRootElementInContainer(container: any) {
   if (!container) {
     return null;
   }
 
-  if (container.nodeType === DOCUMENT_NODE) {
+  if (container.nodeType === DOCUMENT_NODE) { // 判断容器类型
     return container.documentElement;
   } else {
     return container.firstChild;
   }
 }
-
+// 调用方法{ReactDom==4}
 function shouldHydrateDueToLegacyHeuristic(container) {
   const rootElement = getReactRootElementInContainer(container);
   return !!(
     rootElement &&
     rootElement.nodeType === ELEMENT_NODE &&
-    rootElement.hasAttribute(ROOT_ATTRIBUTE_NAME)
+    rootElement.hasAttribute(ROOT_ATTRIBUTE_NAME) // data-reactroot
   );
 }
 
@@ -461,6 +462,7 @@ ReactGenericBatching.setBatchingImplementation(
 
 let warnedAboutHydrateAPI = false;
 
+// // 调用方法{ReactDom==3}
 function legacyCreateRootFromDOMContainer(
   container: DOMContainer, // 容器
   forceHydrate: boolean, // 首次=>false
@@ -468,7 +470,7 @@ function legacyCreateRootFromDOMContainer(
   const shouldHydrate = // 有无服务端渲染==首次传入false进if
     forceHydrate || shouldHydrateDueToLegacyHeuristic(container);
   // First clear any existing content.
-  if (!shouldHydrate) { // 无服务端渲染
+  if (!shouldHydrate) { // 无服务端渲染false==不需要合并
     let warned = false;
     let rootSibling;
     while ((rootSibling = container.lastChild)) {
@@ -503,9 +505,10 @@ function legacyCreateRootFromDOMContainer(
   }
   // Legacy roots are not async by default.
   const isConcurrent = false;
+  // 返回一个ReactRoot构造函数
   return new ReactRoot(container, isConcurrent, shouldHydrate);
 }
-
+// // 调用方法{ReactDom==2}
 function legacyRenderSubtreeIntoContainer(
   parentComponent: ?React$Component<any, any>, // 父级组件=>首次创建==传入null
   children: ReactNodeList, //element-元素
@@ -529,12 +532,12 @@ function legacyRenderSubtreeIntoContainer(
   let root: Root = (container._reactRootContainer: any); // 声明root变量==容器上面是否有container属性
   if (!root) { // 首次创建没有rootContainer属性=进if
     // Initial mount
-    // 创建reactRoot
+    // 创建reactRoot=={调用legacyCreateRootFromDOMContainer}创建root{3,4,5,6}
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container, // 容器
       forceHydrate, // 布尔值
     );
-    if (typeof callback === 'function') {
+    if (typeof callback === 'function') {// 如果传入callBack
       const originalCallback = callback;
       callback = function() {
         const instance = DOMRenderer.getPublicRootInstance(root._internalRoot);
@@ -644,7 +647,7 @@ const ReactDOM: Object = {
     container: DOMContainer, // 渲染容器=>挂载的DOM节点
     callback: ?Function, // 应用渲染结束后的回调
   ) {
-    return legacyRenderSubtreeIntoContainer( // 调用方法
+    return legacyRenderSubtreeIntoContainer( // 调用方法{ReactDom==1}
       null,
       element, // 元素
       container, // 容器
