@@ -262,55 +262,59 @@ component，由于functionComponent是没有实例的所以我们在使用的时
  }
 ```
 
-通过这种方式创建的函数类型的组件，使我们能够在函数中继续使用ref属性，当然我们在实际的应用的中也不会傻到去取函数  
+通过这种方式创建的函数类型的组件，使我们能够在函数中继续使用ref属性，当然我们在实际的应用的中也不会  
 
-类型组件的ref，因为我们知道它是没有实例的。但是，当我们在使用其他库提供的组件的时候，我们可能并不知道这个这个组件  
+傻到去取函数类型组件的ref，因为我们知道它是没有实例的。但是，当我们在使用其他库提供的组件的时候，  
 
-的类型，这时如果能够合理的使用这个方法将会为我们省去不必要的麻烦，同时这里也有HOC的思想在里面。接收一个组件，返回  
+我们可能并不知道这个这个组件的类型，这时如果能够合理的使用这个方法将会为我们省去不必要的麻烦，同时  
 
-对原组件进行包装的新的组件。接下来我们去看看方法的源码：[forwardRef](./react/packages/react/src/forwardRef.js): 
+这里也有HOC的思想在里面。接收一个组件，返回对原组件进行包装的新的组件。接下来我们去看看方法的源码：[forwardRef](./react/packages/react/src/forwardRef.js): 
 
-源码很简单，改方法返回了一个Oject具有render属性，同时$$typeof为"react.forward_ref"的Symbol值。这里可能存在对于  
+源码很简单，改方法返回了一个Oject具有render属性，同时$$typeof为"react.forward_ref"的Symbol值。  
 
-type属性的概念混淆。我们一定不能认为使用forward创建出的组件的$$typeof属性为: 'react.forward_ref'。我们使用  
+这里可能存在对于type属性的概念混淆。我们一定不能认为使用forward创建出的组件的$$typeof属性为:   
 
-forwardRef创建的组建的额时候，实际是将上面例子中的TargetCom作为参数传入到CreateElement方法中的，实际返回的  
+'react.forward_ref'。我们使用forwardRef创建的组建的额时候，实际是将上面例子中的TargetCom作为参  
 
-element中的$$typeof还是REACT_ELEMENT_TYPE, 也就是说这里我们将TargetCom{创建出的对象--具有render和$$typeof属性}  
+数传入到CreateElement方法中的，实际返回的element中的$$typeof还是REACT_ELEMENT_TYPE, 也就是说  
 
-传入，其中CreateElement的type属性为forward方法返回的那个对象，也就是说在type对象里面有个叫做$$typeof的属性这个属性  
+这里我们将TargetCom{创建出的对象--具有render和$$typeof属性}传入，其中CreateElement的type属性为  
 
-的键值为: 'react.forward_ref'。图例:  
+forward方法返回的那个对象，也就是说在type对象里面有个叫做$$typeof的属性这个属性的键值为:  
+
+ 'react.forward_ref'  
 
 ![type](./images/type.png),  
 
 ![type](./images/typeof.png)
 
-在后安的渲染过程中有很多判断，其中有一些就是更具$$typeof展开的，这里我们一定要搞清楚凡是通过CreateElement创建的组件的  
+在后安的渲染过程中有很多判断，其中有一些就是更具$$typeof展开的，这里我们一定要搞清楚凡是通过CreateElement  
 
-$$typeof属性都为: 'REACT_ELEMENT_TYPE'
+创建的组件的$$typeof属性都为: 'REACT_ELEMENT_TYPE'
 
 ### context
 
-这里我们还是按照惯例对api进行一下简单的说明，我们知道在react中是通过props属性来实现组件间通信的，这种通信方式存在的  
+这里我们还是按照惯例对api进行一下简单的说明，我们知道在react中是通过props属性来实现组件间通信的，这种通信  
 
-问题在于，虽然父子组件之间通信很方便但是当我们的组件嵌套层级很深，这时候如果使用props传参就不太现实了，首先中间层的  
+方式存在的问题在于，虽然父子组件之间通信很方便但是当我们的组件嵌套层级很深，这时候如果使用props传参就不太  
 
-组件不一定是你自己写的其次中间层组件声明的props对于这些组件本身没有任何意义，这个时候我们就需要使用context方法帮助  
+现实了，首先中间层的组件不一定是你自己写的其次中间层组件声明的props对于这些组件本身没有任何意义，这个时候  
 
-我们实现多级组件之间的通信。我们在顶层组件中提供了context对象之后，所有的后代组件都可以访问这个对象。以此达到跨越  
+我们就需要使用context方法帮助我们实现多级组件之间的通信。我们在顶层组件中提供了context对象之后，所有的后  
 
-多层组件传递参数的功能。在react当前版本中有两种实现context的方式：
+代组件都可以访问这个对象。以此达到跨越多层组件传递参数的功能。在react当前版本中有两种实现context的方式：
 
 1. ParentComponent.childContextTypes{} == {不推荐，下个大版本会废弃}
 
 2. const { Provider, Consumer } = React.createContext('default');
 
-在使用childContextTypes时候我们需要在父级组件中声明一个getChildContext的方法，该方法返回一个对象，这个对象就是  
+在使用childContextTypes时候我们需要在父级组件中声明一个getChildContext的方法，该方法返回一个对象，  
 
-我们需要传给后代组件的context对象。当我们在使用第一种方法的时候我们需要在组件上声明context对象中属性的类型，有些类似于  
+这个对象就是我们需要传给后代组件的context对象。当我们在使用第一种方法的时候我们需要在组件上声明context  
 
-react的PropTypes类型检测。同时需要在使用到context的后代组件中声明contextTypes类似于下面这种写法：  
+对象中属性的类型，有些类似于react的PropTypes类型检测。同时需要在使用到context的后代组件中声明  
+
+contextTypes类似于下面这种写法：  
 
 ```shell
 Child2.contextTypes = {
@@ -323,25 +327,31 @@ Parent.childContextTypes = {
   a: PropTypes.string,
 }
 ```
-如果不这样声明的话，在后代组价中是取不到context对象的。这里我们需要注意的是我们在子组件中使用context的时候，需要哪个属性 
+如果不这样声明的话，在后代组价中是取不到context对象的。这里我们需要注意的是我们在子组件中使用context的时候，  
 
-就必须去contextTypes中声明，因为改组件的上级组件不止一个上级组件中的context也不止一个。而createContext方法的使用就  
+需要哪个属性就必须去contextTypes中声明，因为改组件的上级组件不止一个上级组件中的context也不止一个。而  
 
-简化了很多，首先我们看到改方法返回两个对象Provider, Consumer分别为context的提供方和订阅方。
+createContext方法的使用就简化了很多，首先我们看到改方法返回两个对象Provider, Consumer分别为context的  
+
+提供方和订阅方。
 
 ```shell
 <Provider value={this.state.newContext}>{this.props.children}</Provider>
 <Consumer>{value => <p>newContext: {value}</p>}</Consumer>
 ```
-在上层组件中声明之后，在想用到context的后代组件中国使用Consumer包括起来就可以访问到之前声明的context。[ReactContext](./react/packages/react/src/ReactContext.js):   
+在上层组件中声明之后，在想用到context的后代组件中国使用Consumer包括起来就可以访问到之前声明的context。  
 
-从源码中我们可以看到CreateContext方法创建了一个对象改对象有一个_currenValue属性记录context的变化，这个对象Provider  
+[ReactContext](./react/packages/react/src/ReactContext.js):   
 
-属性中声明context，然后使改对象的Consumer属性指向对象本身，我们在使用Consumer的时候就直接从context的currenValue上去取值。
+从源码中我们可以看到CreateContext方法创建了一个对象改对象有一个_currenValue属性记录context的变化，  
 
-以上就是react中的Createcontext方法的实现原理，当然实际过程并没有这么简单，至于具体的实现我们接着往下看。同时这里我们也需要  
+这个对象Provider属性中声明context，然后使改对象的Consumer属性指向对象本身，我们在使用Consumer的时候  
 
-注意该对象下的$$typeof属性并不是用来替换ReactElement中的$$typeof, 与我们之前将到的forwardRef中声明的$$typeof一样都只是  
+就直接从context的currenValue上去取值。以上就是react中的Createcontext方法的实现原理，当然实际过程并  
 
-我们传入CreateElement方法中type属性上的的东西。
+没有这么简单，至于具体的实现我们接着往下看。同时这里我们也需要注意该对象下的$$typeof属性并不是用来替换  
+
+ReactElement中的$$typeof, 与我们之前将到的forwardRef中声明的$$typeof一样都只是我们传入CreateElement  
+
+方法中type属性上的的东西。
 
