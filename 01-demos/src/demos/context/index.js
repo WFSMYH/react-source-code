@@ -54,10 +54,6 @@ function Child1(props, context) {
   return <Consumer>{value => <p>newContext: {value}</p>}</Consumer>
 }
 
-Child1.contextTypes = {
-  value: PropTypes.string,
-}
-
 class Child2 extends React.Component {
   render() {
     return (
@@ -69,6 +65,9 @@ class Child2 extends React.Component {
 }
 
 // Child2.contextType = Consumer
+Child1.contextTypes = {
+  value: PropTypes.string,
+}
 
 Child2.contextTypes = {
   value: PropTypes.string,

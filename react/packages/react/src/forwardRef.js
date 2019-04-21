@@ -12,6 +12,7 @@ import warningWithoutStack from 'shared/warningWithoutStack';
 export default function forwardRef<Props, ElementType: React$ElementType>(
   render: (props: Props, ref: React$Ref<ElementType>) => React$Node,
 ) {
+  // 忽略isDev
   if (__DEV__) {
     if (typeof render !== 'function') {
       warningWithoutStack(
@@ -38,7 +39,7 @@ export default function forwardRef<Props, ElementType: React$ElementType>(
       );
     }
   }
-
+  // 返回一个对象其中$$typeof 为react.forward_ref的Symble值
   return {
     $$typeof: REACT_FORWARD_REF_TYPE,
     render,

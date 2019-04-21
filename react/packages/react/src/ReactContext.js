@@ -14,9 +14,10 @@ import type {ReactContext} from 'shared/ReactTypes';
 import warningWithoutStack from 'shared/warningWithoutStack';
 import warning from 'shared/warning';
 
+// createContext方法
 export function createContext<T>(
-  defaultValue: T,
-  calculateChangedBits: ?(a: T, b: T) => number,
+  defaultValue: T, // 默认值
+  calculateChangedBits: ?(a: T, b: T) => number, // 计算新老context方法的变化
 ): ReactContext<T> {
   if (calculateChangedBits === undefined) {
     calculateChangedBits = null;
@@ -31,18 +32,19 @@ export function createContext<T>(
       );
     }
   }
-
+  //  声明context对象
   const context: ReactContext<T> = {
-    $$typeof: REACT_CONTEXT_TYPE,
+    $$typeof: REACT_CONTEXT_TYPE, // 区别于reactElement的$$typeof
     _calculateChangedBits: calculateChangedBits,
     // As a workaround to support multiple concurrent renderers, we categorize
     // some renderers as primary and others as secondary. We only expect
     // there to be two concurrent renderers at most: React Native (primary) and
     // Fabric (secondary); React DOM (primary) and React ART (secondary).
     // Secondary renderers store their context values on separate fields.
-    _currentValue: defaultValue,
+    _currentValue: defaultValue, // 记录provider上context的变化更新到_currentValue上。
     _currentValue2: defaultValue,
     // These are circular
+    // 声明订阅方和提供方
     Provider: (null: any),
     Consumer: (null: any),
   };
@@ -115,6 +117,7 @@ export function createContext<T>(
     // $FlowFixMe: Flow complains about missing properties because it doesn't understand defineProperty
     context.Consumer = Consumer;
   } else {
+    // Consumer对象指向本身==想要获取context的时候只需要从_currentValue取值即可
     context.Consumer = context;
   }
 

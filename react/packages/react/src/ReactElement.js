@@ -110,6 +110,7 @@ function defineRefPropWarningGetter(props, displayName) {
  */
 // 接受createElement方法处理好的参数，单纯返回一个element对象
 const ReactElement = function(type, key, ref, self, source, owner, props) {
+  debugger;
   const element = {
     // This tag allows us to uniquely identify this as a React Element
     // 标识element的类型
