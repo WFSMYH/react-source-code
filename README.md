@@ -19,6 +19,7 @@ version: 1.0.0
     - [createRef&ref](#createrefref)
     - [forward-ref](#forward-ref)
     - [context](#context)
+    - [concurrentMode](#concurrentmode)
 
 <!-- /TOC -->
 ***
@@ -355,3 +356,81 @@ ReactElement中的$$typeof, 与我们之前将到的forwardRef中声明的$$type
 
 方法中type属性上的的东西。
 
+### concurrentMode
+
+concurrentModel 这个api相对比较陌生，可能我们在实际的开发中很少用到或者压根就没用过,concurrentModel是
+
+从react 16版本发布之后就提出的概念，这个api可以让我们在开发中去排列组件渲染的优先级，使得组件渲染的过程变得
+
+可控。我们知道javascript是单线程的，有时候我们在之执行一些复杂动画或者捕获input的输入的时候，页面渲染可能
+
+会出现卡顿的情况，这个时候js正在运行更新操作，这个时候我们可以使用这个api让优先级高的任务优先运行。待到优先  
+
+级高的任务执行完毕之后再去执行优先级低的任务，下面我们一起去看一下该api具体的使用方法：
+
+[demo](./src/demos/concurrent-mode),
+
+```shell
+import React, { ConcurrentMode } from 'react'
+import { flushSync } from 'react-dom'
+```
+在这里我们引入ConcurrentMode与flushSync，这里引用flushSync使因为ConcurrentMode有一个特性我们在
+
+```shell
+export default () => (
+  <ConcurrentMode>
+    <Parent />
+  </ConcurrentMode>
+)
+```
+使用ConcurrentMode渲染组件的时候，他下面的所有子节点的更新都会按照第一优先级去更新。这里我们需要模拟
+
+组件按照优先级别更新，所以我们引入flushSync来提高我们的优先级。
+
+```shell
+ updateNum() {
+    const newNum = this.state.num === 3 ? 0 : this.state.num + 1
+    if (this.state.async) {
+      this.setState({
+        num: newNum,
+      })
+    } else {
+      flushSync(() => {
+        this.setState({
+          num: newNum,
+        })
+      })
+    }
+  }
+```
+在demo中我们渲染了2000个div并且每秒更细div中的内容，然后再给外层的父节点添加一个左右移动的动画，同时我们声明
+
+一个是否是async更新的state，我们通过一个checkbox去切换是否执行async更新：
+
+```shell
+onChange={() => flushSync(() => this.setState({ async: !async }))}
+```
+以上就是我们demo的整体代码，接下来我们去运行demo尝试切换模式，可以观察到在非asyncModel的状态下，动画会变的非常
+
+卡顿，在async模式下会去区分执行的优先级，使我们的动画看能够更流畅一些。在非async状态在因为执行是没有优先级的，动
+
+画与渲染都是一起进行的，在页面重新渲染的时候就会导致我们的动画出现卡顿的情况。以上就是concurrentMode的基础用法，
+
+接下来我们去审查一下[concurrentMode](./react/packages/react/src/React.js)的源码：
+
+```shell
+if (enableStableConcurrentModeAPIs) {
+  // concurrentMode 等于一个常量
+  React.ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
+  React.Profiler = REACT_PROFILER_TYPE;
+} else {
+  React.unstable_ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
+  React.unstable_Profiler = REACT_PROFILER_TYPE;
+}
+```
+
+这个常量是从shared/ReactSymbols文件中引入的一个symbol值，这里我们只是看到了ConcurrentMode模式的组件中只是，
+
+单纯的多了一个symbol属性。源码看到这里目前不打算继续深入探究，该组件的更新以及渲染过程。只是标记该属性，留到后期
+
+查看组件更新源码的时候再去研究。

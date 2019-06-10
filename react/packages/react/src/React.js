@@ -68,6 +68,7 @@ const React = {
 };
 
 if (enableStableConcurrentModeAPIs) {
+  // concurrentMode 等于一个常量
   React.ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
   React.Profiler = REACT_PROFILER_TYPE;
 } else {
